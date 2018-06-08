@@ -31,7 +31,7 @@ use PhpHooks\Application;
 use Symfony\Component\Yaml\Yaml;
 
 $app = new Application();
-$app->setFiles(GitUtility::extractFiles());
+$app->setFiles(GitUtility::extractAllFiles());
 
 $configurationFile = GitUtility::getGitDir() . DIRECTORY_SEPARATOR . '.pre-commit.yml';
 $configurationOverwriteFile = GitUtility::getGitDir() . DIRECTORY_SEPARATOR . '.pre-commit-overwrite.yml';

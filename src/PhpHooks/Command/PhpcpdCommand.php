@@ -3,6 +3,7 @@
 namespace PhpHooks\Command;
 
 use PhpHooks\Abstracts\BaseCommand;
+use PhpHooks\Factory\ProcessBuilderFactory;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Process\ProcessBuilder;
@@ -31,9 +32,21 @@ class PhpcpdCommand extends BaseCommand
      */
     public function run(InputInterface $input, OutputInterface $output)
     {
-        $processBuilder = new ProcessBuilder();
-        $processBuilder
-            ->setPrefix(__DIR__ . '/../../../bin/phpcpd');
+        /* @var $configuration Configuration */
+        $configuration = unserialize($input->getArgument('configuration'));
+
+        /** @var ProcessBuilder $processBuilder */
+        $processBuilder = ProcessBuilderFactory::createByConfigurationAndCommand(
+            $configuration,
+            __DIR__ . '/../../../bin/phpcpd'
+        );
+
+        if (!empty($configuration['phpcpd']['exclude']) && is_array($configuration['phpcpd']['exclude'])) {
+            foreach ($configuration['phpcpd']['exclude'] as $exclude) {
+                $processBuilder->add('--exclude');
+                $processBuilder->add($exclude);
+            }
+        }
 
         $files = unserialize($input->getArgument('files'));
 
@@ -42,7 +55,8 @@ class PhpcpdCommand extends BaseCommand
                 continue;
             }
 
-            $processBuilder->add($file);
+            $processBuilder->add(dirname($file));
+
             $this->doExecute($processBuilder);
         }
     }
